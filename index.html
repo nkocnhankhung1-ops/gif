@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08091d">
+  <title>Gửi matcha latte — 20/10 💗</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="is-setup">
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <!-- ============ BƯỚC 1: SETUP ============ -->
+  <section class="setup" id="setup" aria-labelledby="setupTitle">
+    <div class="setup-tilt" id="setupTilt">
+      <form class="setup-card" id="setupForm" autocomplete="off" novalidate>
+        <div class="setup-badge">✦ chuẩn bị phi thuyền ✦</div>
+        <h2 id="setupTitle">Thiết lập món quà</h2>
+        <p class="setup-desc">Điền vài thông tin nhỏ, xong rồi phi thuyền sẽ đưa em vào thiên hà.</p>
+
+        <label class="field">
+          <span>Tên người nhận</span>
+          <input id="nameInput" type="text" maxlength="30" placeholder="matcha latte" required>
+        </label>
+
+        <label class="field">
+          <span>Tên người gửi</span>
+          <input id="senderInput" type="text" maxlength="20" placeholder="Anh">
+        </label>
+
+        <!-- Ô mã chỉ hiện khi CONFIG.passcode trong script.js khác rỗng -->
+        <label class="field" id="codeField" hidden>
+          <span>Mã mở khóa</span>
+          <input id="codeInput" type="password" maxlength="40" placeholder="Nhập mã bí mật">
+        </label>
+
+        <div class="field">
+          <span>Ảnh bay trong cơn bão (có thể chọn nhiều ảnh)</span>
+          <label class="photo-pick">
+            <span id="setupPhotoName">📷 Chọn ảnh để bay trong cơn bão</span>
+            <input class="photo-input" id="setupPhotoInput" type="file" accept="image/*" multiple>
+          </label>
+        </div>
+
+        <p class="setup-error" id="setupError" role="alert"></p>
+        <button class="gift-button" id="startButton" type="submit">Khởi động hành trình 🚀</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ BƯỚC 2: TRANG CHÍNH ============ -->
+  <main class="page" id="mainPage" hidden>
+    <div class="eyebrow">✦ một thông điệp từ thiên hà tình yêu ✦</div>
+    <h1>Anh yêu em</h1>
+    <p class="recipient" id="recipientName">matcha latte ✨</p>
+    <p class="subtitle">Tín hiệu vũ trụ đã gửi đến em một món quà đặc biệt.</p>
+
+    <section class="stage" aria-label="Hành tinh tình yêu">
+      <div class="scene" id="scene">
+        <div class="orbit3d" style="--tilt:68deg; --roll:-22deg; --r:150px; --speed:11s; --ring:#d9baff66; --moon:#78e8ff" aria-hidden="true">
+          <div class="orbit-spin"><div class="moon"><i></i></div></div>
+        </div>
+        <div class="orbit3d" style="--tilt:62deg; --roll:38deg; --r:178px; --speed:17s; --ring:#79eaff42; --moon:#ff78c9" aria-hidden="true">
+          <div class="orbit-spin reverse"><div class="moon"><i></i></div></div>
+        </div>
+        <button class="planet-button" id="openLetter" aria-label="Mở lá thư tình yêu">
+          <span class="planet"></span>
+          <span class="planet-heart">💌</span>
+        </button>
+      </div>
+      <div class="click-hint">Chạm vào hành tinh để mở bí mật ♡</div>
+    </section>
+    <p class="footer-note">Made with 100% tình yêu · 200% xàm xí</p>
+  </main>
+
+  <div class="overlay" id="letterOverlay" role="dialog" aria-modal="true" aria-labelledby="letterTitle">
+    <div class="letter-tilt" id="letterTilt">
+      <article class="letter">
+        <div class="letter-top">
+          <span>✦ thư gửi từ trái tim ✦</span>
+          <button class="close" id="closeLetter" aria-label="Đóng lá thư">×</button>
+        </div>
+        <h2 id="letterTitle">Chúc mừng 20/10, em yêu! 💗</h2>
+        <!-- Customize the message below -->
+        <p>Chúc cô gái đáng yêu nhất vũ trụ có một ngày 20/10 thật vui vẻ, xinh đẹp và luôn được yêu thương.</p>
+        <p>Anh chúc em lúc nào cũng cười tươi như vừa nhận lương, ăn ngon mà không tăng cân, ngủ sớm nhưng vẫn được mơ thấy anh. 😌</p>
+        <p>Từ giờ em không phải phiền anh nữa… vì anh tự nguyện xuất hiện để làm phiền em mỗi ngày. Có chuyện vui thì kể anh nghe, có chuyện buồn thì đưa đây anh ôm — còn chuyện hết tiền thì mình cùng nhau suy nghĩ. 😂</p>
+        <p>Mong rằng những ngày bình thường của em cũng có thật nhiều điều dễ thương. Và nếu hôm nay em chưa nhận được quà ngoài đời, thì ít nhất em đã nhận được một chiếc website hơi khùng nhưng rất chân thành này.</p>
+        <p class="signature">Thương em nhiều hơn số ngôi sao ngoài kia. — <span id="senderName">Anh</span> 💘</p>
+        <button class="gift-button" id="giftButton">Nhận quà bất ngờ 🎉</button>
+      </article>
+    </div>
+  </div>
+
+  <section class="storm" id="memeStorm" aria-label="Cơn bão meme tình yêu">
+    <div class="shockwave" id="shockwave" aria-hidden="true"></div>
+    <div class="finale" id="finale" aria-hidden="true">
+      <div class="finale-hearts" aria-hidden="true">
+        <span class="finale-heart">💗</span>
+        <span class="finale-heart">💖</span>
+        <span class="finale-heart">💕</span>
+        <span class="finale-heart">💘</span>
+        <span class="finale-heart">💝</span>
+        <span class="finale-heart">❤️</span>
+        <span class="finale-heart">💓</span>
+        <span class="finale-heart">💜</span>
+        <span class="finale-heart">💜</span>
+        <span class="finale-heart">💛</span>
+      </div>
+      <div class="finale-gallery" id="finaleFrame"></div>
+      <p class="finale-caption">Yêu em nhiều lắm 💗</p>
+    </div>
+    <div class="storm-title">  20/10! 💖</div>
+    <div class="storm-subtitle">YÊU EM HẾT NƯỚC CHẤM • HỆ THỐNG ĐANG QUÁ TẢI </div>
+    <div class="storm-controls">
+      <label class="photo-picker">
+        📷 Chọn nhiều ảnh
+        <input class="photo-input" id="personalPhotoInput" type="file" accept="image/*" multiple aria-label="Chọn nhiều ảnh cho cơn bão tình yêu">
+      </label>
+      <button class="replay" id="replayButton">🔁 Chơi lại cơn bão tình yêu</button>
+      <button class="replay" id="backButton">← Về trang chính</button>
+    </div>
+    <span class="visually-hidden" id="photoStatus" role="status" aria-live="polite"></span>
+  </section>
+  <div class="flash" id="flash" aria-hidden="true"></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
