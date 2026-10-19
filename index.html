@@ -29,6 +29,11 @@
           <input id="senderInput" type="text" maxlength="20" placeholder="Anh">
         </label>
 
+        <label class="field">
+          <span>Lời nhắn riêng (không bắt buộc — để trống sẽ dùng lá thư mẫu)</span>
+          <textarea id="messageInput" rows="4" maxlength="600" placeholder="Mỗi đoạn cách nhau một dòng trống..."></textarea>
+        </label>
+
         <!-- Ô mã chỉ hiện khi CONFIG.passcode trong script.js khác rỗng -->
         <label class="field" id="codeField" hidden>
           <span>Mã mở khóa</span>
@@ -36,7 +41,7 @@
         </label>
 
         <div class="field">
-          <span>Ảnh bay trong cơn bão (có thể chọn nhiều ảnh)</span>
+          <span>Ảnh xem thử trên máy bạn (người nhận sẽ thấy ảnh trong thư mục photos/)</span>
           <label class="photo-pick">
             <span id="setupPhotoName">📷 Chọn ảnh để bay trong cơn bão</span>
             <input class="photo-input" id="setupPhotoInput" type="file" accept="image/*" multiple>
@@ -44,7 +49,18 @@
         </div>
 
         <p class="setup-error" id="setupError" role="alert"></p>
-        <button class="gift-button" id="startButton" type="submit">Khởi động hành trình 🚀</button>
+        <button class="gift-button" id="startButton" type="submit">Xem thử món quà 🚀</button>
+        <button class="link-button" id="linkButton" type="button">🔗 Tạo link gửi người nhận</button>
+
+        <div class="share-box" id="shareBox" hidden>
+          <label class="field">
+            <span>Link gửi người nhận</span>
+            <input id="shareLink" type="text" readonly>
+          </label>
+          <button class="copy-button" id="copyLink" type="button">📋 Sao chép link</button>
+          <p class="share-note" id="shareNote" role="status" aria-live="polite"></p>
+          <p class="share-note">Ảnh không nằm trong link. Hãy đặt ảnh vào thư mục <b>photos/</b> cạnh <b>index.html</b>, đặt tên <b>1.jpg, 2.jpg … 10.jpg</b>, rồi đăng cả thư mục lên web trước khi gửi link.</p>
+        </div>
       </form>
     </div>
   </section>
@@ -104,15 +120,15 @@
         <span class="finale-heart">💝</span>
         <span class="finale-heart">❤️</span>
         <span class="finale-heart">💓</span>
-        <span class="finale-heart">💜</span>
+        <span class="finale-heart">🩷</span>
         <span class="finale-heart">💜</span>
         <span class="finale-heart">💛</span>
       </div>
       <div class="finale-gallery" id="finaleFrame"></div>
       <p class="finale-caption">Yêu em nhiều lắm 💗</p>
     </div>
-    <div class="storm-title">  20/10! 💖</div>
-    <div class="storm-subtitle">YÊU EM HẾT NƯỚC CHẤM • HỆ THỐNG ĐANG QUÁ TẢI </div>
+    <div class="storm-title">    20/10!!! 💖</div>
+    <div class="storm-subtitle">YÊU EM HẾT NƯỚC CHẤM • HỆ THỐNG ĐANG QUÁ TẢI 🐼</div>
     <div class="storm-controls">
       <label class="photo-picker">
         📷 Chọn nhiều ảnh
