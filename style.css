@@ -265,7 +265,7 @@ body.zooming .planet-button {
   transform: translate(-50%, 22px); color: #b9f7ff; font-weight: 900;
   font-size: clamp(.8rem, 3vw, 1.3rem); text-align: center;
 }
-/* Màn kết: một ảnh lớn được chọn ngẫu nhiên. */
+/* Màn kết: bộ sưu tập ~10 ảnh. Lưới gọn, bảng màu 5 sắc dịu, mỗi ảnh trôi lên nhẹ. */
 .finale {
   position: absolute; left: 50%; top: calc(50% - 44px); z-index: 5; translate: -50% -50%;
   width: min(96vw, 1060px); display: flex; flex-direction: column; align-items: center;
@@ -302,11 +302,14 @@ body.zooming .planet-button {
 .finale-heart:nth-child(10) { left: 96%; --dur: 10s; --dl: 2.6s; --sway: -12px; }
 .finale.show .finale-heart { animation: heartRise var(--dur, 10s) ease-in-out var(--dl, 0s) infinite; }
 
+/* lưới ảnh: 5 cột × 2 hàng (máy tính), 3 × 3 (điện thoại) */
 .finale-gallery {
-  --tile: max(120px, min(68vw, 340px, calc((100vh - 300px) / 1.25)));
+  --gap: clamp(8px, 1.6vw, 18px);
+  --cols: 5;
+  --tile: max(84px, min(200px, calc((min(94vw, 1040px) - 4 * var(--gap)) / 5), calc((100vh - 300px) / 2.5)));
   position: relative; z-index: 1;
-  width: var(--tile);
-  display: flex; justify-content: center;
+  width: calc(var(--cols) * var(--tile) + (var(--cols) - 1) * var(--gap));
+  display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap);
 }
 .tile {
   width: var(--tile); aspect-ratio: 4 / 5; margin: 0; position: relative;
@@ -323,7 +326,7 @@ body.zooming .planet-button {
   animation: tileDrift var(--dur, 4.6s) ease-in-out var(--dl, 0s) infinite alternate;
 }
 .tile-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* lớp phủ màu nhẹ để ảnh đồng bộ với khung */
+/* lớp phủ màu rất nhẹ để 10 ảnh cùng một tông */
 .tile-inner::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(160deg, color-mix(in srgb, var(--c) 26%, transparent), transparent 52%);
@@ -333,7 +336,12 @@ body.zooming .planet-button {
 .storm.finale-on .storm-title { animation: titleOut .8s ease forwards; }
 .storm.finale-on .storm-subtitle { opacity: 0; transition: opacity .8s ease; }
 @media (max-width: 719px) {
-  .finale-gallery { --tile: max(120px, min(68vw, 300px, calc((100vh - 300px) / 1.25))); }
+  .finale-gallery {
+    --cols: 3; --gap: 10px;
+    --tile: max(76px, min(132px, calc((100vw - 2 * var(--gap) - 28px) / 3), calc((100vh - 300px) / 3.1)));
+  }
+  .tile { aspect-ratio: 1; }
+  .tile:nth-child(n + 10) { display: none; }
 }
 .meme {
   position: absolute; bottom: -150px; left: var(--x); width: var(--size); height: var(--size);
@@ -435,3 +443,30 @@ body.zooming .planet-button {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* =========================
+   LINK CHIA SẺ + CHẾ ĐỘ NGƯỜI NHẬN
+   ========================= */
+.setup { place-items: start center; }
+.setup-tilt { margin: auto; }
+.field textarea {
+  width: 100%; padding: 13px 14px; border-radius: 12px; font: inherit; color: #fff; resize: vertical;
+  background: #0a0b2480; border: 1px solid #ffffff3d; outline: none; line-height: 1.5;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field textarea::placeholder { color: #ffffff77; }
+.field textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px #78e8ff33; }
+.field input[readonly] { color: #b9f5ff; font-size: .82rem; }
+.link-button, .copy-button {
+  display: block; width: 100%; margin-top: 12px; padding: 14px 20px; border-radius: 14px;
+  font: inherit; font-weight: 800; color: #fff; cursor: pointer;
+  background: #ffffff14; border: 1px solid #ffffff66; transition: background .2s, transform .2s;
+}
+.link-button:hover, .copy-button:hover { background: #ffffff2b; transform: translateY(-2px); }
+.link-button:focus-visible, .copy-button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.share-box { margin-top: 16px; padding-top: 16px; border-top: 1px solid #ffffff2e; }
+.share-box .copy-button { margin-top: 0; }
+.share-note { margin: 10px 0 0; color: #d9d3f2; font-size: .82rem; line-height: 1.5; }
+.share-note b { color: #b9f5ff; }
+/* người nhận chỉ xem: không có công cụ chỉnh sửa nào */
+body.is-viewer .photo-picker { display: none; }
