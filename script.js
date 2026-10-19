@@ -7,7 +7,9 @@ const CONFIG = {
   passcode: '',              // Để rỗng = không cần mã. Đặt chữ bất kỳ (vd 'matcha') để bật ô nhập mã ở màn setup.
   defaultName: 'matcha latte',
   defaultSender: 'Anh',
-  storageKey: 'love-2010-setup'
+  storageKey: 'love-2010-setup',
+  photoExt: 'jpg',           // Ảnh người nhận: photos/1.jpg ... photos/12.jpg (đổi sang png/webp nếu cần)
+  photoMax: 12
 };
 
 const $ = (id) => document.getElementById(id);
@@ -211,6 +213,7 @@ const senderInput = $('senderInput');
 const codeField = $('codeField');
 const codeInput = $('codeInput');
 const setupError = $('setupError');
+const messageInput = $('messageInput');
 const mainPage = $('mainPage');
 const scene = $('scene');
 const flash = $('flash');
@@ -219,7 +222,7 @@ let entering = false;
 // Khôi phục lần nhập trước (nếu có)
 try {
   const saved = JSON.parse(localStorage.getItem(CONFIG.storageKey) || 'null');
-  if (saved) { nameInput.value = saved.name || ''; senderInput.value = saved.sender || ''; }
+  if (saved) { nameInput.value = saved.name || ''; senderInput.value = saved.sender || ''; messageInput.value = saved.message || ''; }
 } catch { /* bỏ qua nếu bị chặn */ }
 
 if (CONFIG.passcode) codeField.hidden = false;
@@ -244,10 +247,23 @@ function popFlash() {
   flash.classList.add('pop');
 }
 
-function applyContent(name, sender) {
+function applyContent(name, sender, message = '') {
   $('recipientName').textContent = name + ' ✨';
   $('senderName').textContent = sender;
   document.title = `Gửi ${name} — 20/10 💗`;
+
+  // Lời nhắn riêng: thay các đoạn của lá thư mẫu (textContent → an toàn, không chạy HTML)
+  const lines = message.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+  if (lines.length) {
+    const letter = document.querySelector('.letter');
+    const signature = letter.querySelector('.signature');
+    letter.querySelectorAll('p:not(.signature)').forEach((p) => p.remove());
+    lines.forEach((text) => {
+      const p = document.createElement('p');
+      p.textContent = text;
+      letter.insertBefore(p, signature);
+    });
+  }
 }
 
 function enterMain() {
@@ -282,8 +298,8 @@ setupForm.addEventListener('submit', (e) => {
   const name = nameInput.value.trim() || CONFIG.defaultName;
   const sender = senderInput.value.trim() || CONFIG.defaultSender;
   setupError.textContent = '';
-  applyContent(name, sender);
-  try { localStorage.setItem(CONFIG.storageKey, JSON.stringify({ name: nameInput.value.trim(), sender: senderInput.value.trim() })); } catch { /* ignore */ }
+  applyContent(name, sender, messageInput.value);
+  saveDraft();
   enterMain();
 });
 
@@ -366,37 +382,58 @@ function makeParticle() {
   return el;
 }
 
-// Màn kết chỉ hiển thị một ảnh được chọn ngẫu nhiên trong số ảnh đã tải lên.
+// Màn kết: bộ sưu tập ~10 ảnh khác nhau, bảng màu 5 sắc dịu, mỗi ảnh trôi lên nhẹ.
+// Ít hơn 10 ảnh → xoay vòng (xáo trộn, tránh 2 ảnh giống nhau đứng cạnh). Nhiều hơn 10 → bốc ngẫu nhiên 10 ảnh.
 const finale = $('finale');
 const finaleFrame = $('finaleFrame');
-const FRAME_COLOR = '#ff9ad5';
-const FINALE_EMOJI = '💗';
+const FINALE_COUNT = 10;
+const FRAME_COLORS = ['#ff9ad5', '#b79cff', '#7be7ff', '#ffc2a8', '#a8f0d0'];
+const FRAME_ROTATIONS = [-2.5, 1.5, -1, 2.5, -2, 2, -1.5, 1, -2.5, 2];
+const FINALE_EMOJI = ['💗', '💖', '💕', '💘', '💝', '🩷', '💓', '💞', '💜', '🌸'];
 let finaleTimer = 0;
 
-function pickFinalePhoto() {
-  if (!personalPhotoUrls.length) return null;
-  return personalPhotoUrls[Math.floor(Math.random() * personalPhotoUrls.length)];
+function shuffle(list) {
+  const a = list.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const k = (Math.random() * (i + 1)) | 0;
+    [a[i], a[k]] = [a[k], a[i]];
+  }
+  return a;
+}
+
+function pickFinalePhotos() {
+  if (!personalPhotoUrls.length) return Array(FINALE_COUNT).fill(null);
+  const result = [];
+  while (result.length < FINALE_COUNT) {
+    const batch = shuffle(personalPhotoUrls);
+    if (result.length && batch.length > 1 && batch[0] === result[result.length - 1]) batch.push(batch.shift());
+    result.push(...batch);
+  }
+  return result.slice(0, FINALE_COUNT);
 }
 
 function buildFinale() {
   const fragment = document.createDocumentFragment();
-  const tile = document.createElement('figure');
-  tile.className = 'tile';
-  tile.style.cssText = `--i:0;--c:${FRAME_COLOR};--rot:-2deg;--dur:4s;--dl:0s`;
-  const inner = document.createElement('div');
-  inner.className = 'tile-inner';
-  const url = pickFinalePhoto();
-  if (url) {
-    const img = document.createElement('img');
-    img.src = url;
-    img.alt = '';
-    img.decoding = 'async';
-    inner.appendChild(img);
-  } else {
-    inner.textContent = FINALE_EMOJI;
-  }
-  tile.appendChild(inner);
-  fragment.appendChild(tile);
+  pickFinalePhotos().forEach((url, i) => {
+    const tile = document.createElement('figure');
+    tile.className = 'tile';
+    tile.style.cssText =
+      `--i:${i};--c:${FRAME_COLORS[i % FRAME_COLORS.length]};--rot:${FRAME_ROTATIONS[i]}deg;` +
+      `--dur:${(4 + (i % 4) * .6).toFixed(1)}s;--dl:${(-((i * 0.83) % 4)).toFixed(2)}s`;
+    const inner = document.createElement('div');
+    inner.className = 'tile-inner';
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '';
+      img.decoding = 'async';
+      inner.appendChild(img);
+    } else {
+      inner.textContent = FINALE_EMOJI[i];
+    }
+    tile.appendChild(inner);
+    fragment.appendChild(tile);
+  });
   finaleFrame.replaceChildren(fragment);
 }
 
@@ -422,10 +459,7 @@ function refreshParticles() {
 $('personalPhotoInput').addEventListener('change', async (e) => {
   const ok = await setPersonalPhotos(Array.from(e.target.files));
   e.target.value = '';
-  if (ok && storm.classList.contains('active')) {
-    refreshParticles();
-    buildFinale();
-  }
+  if (ok && storm.classList.contains('active')) refreshParticles();
 });
 
 function launchStorm() {
@@ -475,3 +509,122 @@ document.addEventListener('keydown', (e) => {
     launchStorm();
   }
 });
+
+// =========================
+// TẠO LINK CHIA SẺ (người gửi) — dữ liệu nằm sau dấu # nên không gửi lên máy chủ
+// =========================
+const linkButton = $('linkButton');
+const shareBox = $('shareBox');
+const shareLink = $('shareLink');
+const shareNote = $('shareNote');
+
+function encodeGift(data) {
+  const bytes = new TextEncoder().encode(JSON.stringify(data));
+  let bin = '';
+  bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function decodeGift(text) {
+  const b64 = text.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
+  const bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function saveDraft() {
+  try {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+      name: nameInput.value.trim(), sender: senderInput.value.trim(), message: messageInput.value
+    }));
+  } catch { /* ignore */ }
+}
+
+async function copyShareLink() {
+  shareLink.focus();
+  shareLink.select();
+  let ok = false;
+  try { await navigator.clipboard.writeText(shareLink.value); ok = true; } catch { /* thử cách cũ */ }
+  if (!ok) { try { ok = document.execCommand('copy'); } catch { /* ignore */ } }
+  const local = location.protocol === 'file:'
+    ? ' ⚠️ Bạn đang mở file trên máy nên link chỉ chạy trên máy này. Hãy đăng web lên hosting (Netlify, GitHub Pages…) rồi tạo link lại.'
+    : '';
+  shareNote.textContent = (ok ? '✅ Đã sao chép link, gửi cho người nhận nhé!' : 'Hãy bấm giữ vào ô link để sao chép.') + local;
+}
+
+linkButton.addEventListener('click', () => {
+  if (CONFIG.passcode && codeInput.value.trim().toLowerCase() !== CONFIG.passcode.toLowerCase()) {
+    showSetupError('Mã chưa đúng, thử lại nhé 💫');
+    codeInput.focus();
+    return;
+  }
+  setupError.textContent = '';
+  const payload = {
+    v: 1,
+    n: nameInput.value.trim() || CONFIG.defaultName,
+    s: senderInput.value.trim() || CONFIG.defaultSender,
+    m: messageInput.value.trim()
+  };
+  shareLink.value = `${location.href.split('#')[0]}#g=${encodeGift(payload)}`;
+  shareBox.hidden = false;
+  saveDraft();
+  copyShareLink();
+});
+$('copyLink').addEventListener('click', copyShareLink);
+
+// =========================
+// CHẾ ĐỘ NGƯỜI NHẬN — mở link là vào thẳng món quà, không có form hay công cụ chỉnh sửa
+// Ảnh lấy từ thư mục photos/ trên web, được thu nhỏ trước khi bay.
+// =========================
+function readGiftFromHash() {
+  const match = location.hash.match(/^#g=([A-Za-z0-9_-]+)$/);
+  if (!match) return null;
+  try {
+    const data = decodeGift(match[1]);
+    if (!data || data.v !== 1 || typeof data.n !== 'string') return null;
+    return {
+      name: data.n.slice(0, 30) || CONFIG.defaultName,
+      sender: String(data.s || CONFIG.defaultSender).slice(0, 20),
+      message: String(data.m || '').slice(0, 600)
+    };
+  } catch { return null; }
+}
+
+function probeImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+async function loadHostedPhotos() {
+  const tasks = Array.from({ length: CONFIG.photoMax }, async (_, k) => {
+    const url = `photos/${k + 1}.${CONFIG.photoExt}`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      return await downscalePhoto(await res.blob());
+    } catch {
+      return probeImage(url);   // fetch bị chặn (vd mở từ file://) → dùng ảnh gốc
+    }
+  });
+  const urls = (await Promise.all(tasks)).filter(Boolean);
+  if (urls.length) personalPhotoUrls = urls;
+}
+
+function bootViewer(gift) {
+  body.classList.remove('is-setup');
+  body.classList.add('is-viewer', 'is-main');
+  setup.remove();
+  mainPage.hidden = false;
+  applyContent(gift.name, gift.sender, gift.message);
+  setTiltTarget(scene, 16, 24);
+  warpTarget = 10;                                   // lướt vào thiên hà rồi giảm tốc mượt
+  setTimeout(() => { warpTarget = IDLE_WARP; }, 900);
+  loadHostedPhotos();
+}
+
+const incomingGift = readGiftFromHash();
+if (incomingGift) bootViewer(incomingGift);
